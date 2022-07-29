@@ -34,9 +34,10 @@ class UserHandler:
         return False
 
     def userPublicCredentials(self, user_id):
-        sqlquery = sql.SQL('select {username},{name} from users where user_id = %s').format(
+        sqlquery = sql.SQL('select {username},{name} from users where {user_id} = %s').format(
+            user_id=sql.Identifier("user_id"),
             username=sql.Identifier("username"), name=sql.Identifier("name"))
-        self.cursor.execute(sqlquery,(user_id,))
+        self.cursor.execute(sqlquery, (user_id,))
         data = self.cursor.fetchone()
         return {"username": data[0], "name": data[1]} if data else {}
 

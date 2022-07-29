@@ -36,7 +36,27 @@ class PostsHandler:
         sqlquery = sql.SQL("select * from posts")
         self.cursor.execute(sqlquery)
         data = self.cursor.fetchall()
-        print(type(self.functions.get("userPublicCredentials")(data[0][0])))
-        return [{**{'title': i[1], 'tagline':i[2], "likeNo":i[4], 'slug':i[6]}, **self.functions.get("userPublicCredentials")(i[3])} for i in data]
-    def getPostBySlug(self,slug):
-        sqlquery = sql.SQL('')
+        return [{**{"id":i[0],'title': i[1], 'tagline':i[2], "likeNo":i[4], 'slug':i[6]}, **self.functions.get("userPublicCredentials")(i[3])} for i in data]
+
+    def getPostBySlug(self, slug):
+        sqlquery = sql.SQL(
+            'select * from posts where {slug} = %s').format(slug=sql.Identifier("slug"))
+        self.cursor.execute(sqlquery, (slug,))
+        data = self.cursor.fetchone()
+        return {**{'title': data[1], "tagline": data[2], "likeNum": data[4], 'content': data[5]}, **self.functions.get("userPublicCredentials")(data[3])} if data else {}
+
+    def getViews(self, slug):
+        sqlquery = sql.SQL('select views from posts where {slug} = %s').format(
+            slug=sql.Identifier("slug"))
+        self.cursor.execute(sqlquery, (slug,))
+        data = self.cursor.fetchone()
+        return int(data[0]) if data else 0
+
+    def postViewed(self, slug, byUser=''):
+        views = self.getViews(slug=slug)
+        sqlquery = sql.SQL('update posts set {views} = %s where {slug} = %s').format(
+            views=sql.Identifier("views"),
+            slug = sql.Identifier("slug")
+            )
+        self.cursor.execute(sqlquery,(int(views+1),slug))
+        self.database.commit()

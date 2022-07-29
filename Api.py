@@ -36,3 +36,14 @@ def auth(req: Request):
 @app.post('/user/login')
 def userLogin(req: Request):
     return userHandler.login(username=req.headers.get("username"), password=req.headers.get('password'))
+
+
+@app.get('/posts/all')
+def allPosts():
+    return postHandler.getAllPosts()
+
+
+@app.get("/post/{slug}")
+def getPostBySlug(req: Request,slug):
+    postHandler.postViewed(slug=slug)
+    return postHandler.getPostBySlug(slug=slug)
